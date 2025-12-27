@@ -10,10 +10,12 @@ const careerSwapRoute = require("../src/routes/careerSwap.route");
 // const roadmapRoute = require("../src/routes/roadmap.routes");
 
 
-app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
+  origin: [
+    'http://localhost:5173',
+    'https://career-flip.vercel.app'
+  ],
+  credentials: true
 }));
 app.use(cookieParser());
 app.use(passport.initialize());

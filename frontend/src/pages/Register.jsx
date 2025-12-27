@@ -67,7 +67,7 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/user/register', {
+            const res = await axios.post('https://careerflip.onrender.com/api/user/register', {
                 email,
                 username,
                 password
@@ -86,7 +86,7 @@ const Register = () => {
 
     // Google login / signup (auto password handling)
      const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:5000/api/user/auth/google';
+        window.location.href = 'https://careerflip.onrender.com/api/user/auth/google';
     };
 
     return (

@@ -72,7 +72,7 @@ const Dashbord = () => {
                     // For this specific request, we just need to ensure we call the API.
                 }
 
-                const response = await axios.get('http://localhost:5000/api/user/getuser', {
+                const response = await axios.get('https://careerflip.onrender.com/api/user/getuser', {
                     withCredentials: true // IMPORTANT: This sends the HttpOnly cookie to the backend
                 });
                 console.log(response.data);

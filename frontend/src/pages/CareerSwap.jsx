@@ -76,7 +76,7 @@ const CareerSwap = () => {
         formData.append('targetRole', targetRole);
         formData.append('pdfFile', file);
         try {
-            const response = await axios.post('http://localhost:5000/api/careerSwap/upload', formData, {
+            const response = await axios.post('https://careerflip.onrender.com/api/careerSwap/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });

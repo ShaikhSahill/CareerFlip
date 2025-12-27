@@ -47,7 +47,7 @@ const Login = () => {
         setError('');
         setLoading(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/user/login', formData);
+            const res = await axios.post('https://careerflip.onrender.com/api/user/login', formData);
             showToast(res.data.message || 'Login successful', 'success');
 
             // Set token in cookie (valid for 1 day)
@@ -65,7 +65,7 @@ const Login = () => {
     };
 
     const handleAuthProviderLogin = () => {
-          window.location.href = 'http://localhost:5000/api/user/auth/google';
+          window.location.href = 'https://careerflip.onrender.com/api/user/auth/google';
 
     };
 

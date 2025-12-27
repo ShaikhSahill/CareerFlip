@@ -91,9 +91,9 @@ const CareerSwapResult = ({ result }) => {
                         </div>
                         <span className="text-xs font-bold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg">+ Salary</span>
                     </div>
-                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Potential Salary Bump</p>
-                    <p className="text-2xl font-extrabold text-emerald-700">{potentialSalaryIncreaseIndianRupees}</p>
-                    <p className="text-xs text-slate-400 mt-1">Average market increase</p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Average Salary Bump</p>
+                    <p className="text-2xl font-extrabold text-emerald-700">{potentialSalaryIncreaseIndianRupees} INR</p>
+                    <p className="text-xs text-slate-400 mt-1">*Approx market increase</p>
                 </div>
 
                 {/* Metric Card 4 */}

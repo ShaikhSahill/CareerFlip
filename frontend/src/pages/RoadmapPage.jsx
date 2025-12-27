@@ -160,13 +160,20 @@ const RoadmapPage = () => {
         setLoading(true);
         try {
             const res = await axios.post('https://careerflip.onrender.com/api/roadmap/generate', {
+                withCredentials: true,
                 domain: chosen,
                 level: selectedLevel
-            }, { withCredentials: true });
+            });
             setLoading(false);
             
             console.log(res.data.roadmap);
-            navigate('/flow', { state: { selectedCareer: chosen, roadmap: res.data.roadmap } });
+            navigate('/flow', { 
+                state: { 
+                    selectedCareer: chosen, 
+                    roadmap: res.data.roadmap,
+                    roadmapId: res.data.roadmapId
+                } 
+            });
         } catch (err) {
             setLoading(false);
             alert('Failed to generate roadmap. Please try again.');

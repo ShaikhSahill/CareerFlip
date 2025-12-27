@@ -16,6 +16,7 @@ const generateRoadmap = async (req, res) => {
             console.log("Roadmap found in database, returning cached data");
             return res.status(200).json({ 
                 roadmap: existingRoadmap.roadmapData,
+                roadmapId: existingRoadmap._id,
                 cached: true 
             });
         }
@@ -24,6 +25,7 @@ const generateRoadmap = async (req, res) => {
         console.log("Roadmap not found in database, generating new one");
         const finalResponse = await generateFullRoadmap(domain, level); 
         
+        let newRoadmapId = null;
         if (finalResponse) {
             try {
                 const roadmapEntry = new Roadmap({      
@@ -32,7 +34,8 @@ const generateRoadmap = async (req, res) => {
                     roadmapData: finalResponse   
                 });
                 
-                await roadmapEntry.save();
+                const savedRoadmap = await roadmapEntry.save();
+                newRoadmapId = savedRoadmap._id;
                 console.log("New roadmap saved to database");
             } catch (error) {
                 console.log("Error saving roadmap to database:", error.message);
@@ -41,6 +44,7 @@ const generateRoadmap = async (req, res) => {
         
         res.status(200).json({ 
             roadmap: finalResponse,
+            roadmapId: newRoadmapId,
             cached: false 
         });
         

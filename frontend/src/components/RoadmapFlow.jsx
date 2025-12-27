@@ -11,6 +11,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { Clock, Download, Share2, ChevronDown, Bot, Code, Database, Layers3, ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ScheduleModal from './ScheduleModal';
+import axios from 'axios';
 
 // --- MOCK DATA STORE (Simulating AI Generation) ---
 
@@ -264,6 +266,31 @@ const RoadmapFlow = () => {
     const [progress, setProgress] = useState(roadmap?.progress || 0);
     const [title, setTitle] = useState(roadmap?.title || selectedCareer);
 
+    // State for modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [scheduleLoading, setScheduleLoading] = useState(false);
+    
+    const roadmapId = location?.state?.roadmapId;
+
+    const handleScheduleLearning = async (preferences) => {
+        setScheduleLoading(true);
+        try {
+            const response = await axios.post('https://careerflip.onrender.com/api/roadmap/schedule', {
+                roadmapId: roadmapId,
+                ...preferences
+            }, { withCredentials: true });
+            
+            alert(response.data.message);
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error(error);
+            const msg = error.response?.data?.error || "Failed to schedule. Ensure you are logged in with Google.";
+            alert(msg);
+        } finally {
+            setScheduleLoading(false);
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleRedirect = () => {
@@ -342,10 +369,26 @@ const RoadmapFlow = () => {
                                 )}
                             </p>
                         </div>
+
                         <div className="flex items-center gap-2">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition">
+                            <button 
+                                onClick={() => {
+                                    if (!roadmapId) {
+                                        alert("Please generate a new roadmap to use this feature (or this is a mock roadmap).");
+                                        return;
+                                    }
+                                    setIsModalOpen(true);
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition"
+                            >
                                 <Clock size={16} /> Schedule learning
                             </button>
+                            <ScheduleModal 
+                                isOpen={isModalOpen} 
+                                onClose={() => setIsModalOpen(false)} 
+                                onSchedule={handleScheduleLearning}
+                                loading={scheduleLoading}
+                            />
                             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-sm text-gray-700 hover:bg-gray-100 transition">
                                 <Download size={16} /> Download
                             </button>

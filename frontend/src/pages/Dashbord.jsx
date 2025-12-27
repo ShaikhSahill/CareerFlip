@@ -121,7 +121,7 @@ const Dashbord = () => {
 
             {/* -------- Metrics -------- */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <MetricCard label="Courses In Progress" value="3" icon={BookOpen} trend="+1 this week" />
+                <MetricCard label="Roadmap In Progress" value="3" icon={BookOpen} trend="+1 this week" />
                 <MetricCard label="Skills Mastered" value="12" icon={Target} trend="+2 new" />
                 <MetricCard label="Learning Streak" value="5 Days" icon={Zap} trend="Keep it up!" />
             </div>

@@ -85,9 +85,10 @@ const MicroLearning = () => {
          setLoading(true);
         try {
             const res = await axios.post('https://careerflip.onrender.com/api/microlearning/generate-content', {
+                withCredentials: true,
                 topic,
                 format: selectedFormat
-            }, { withCredentials: true });
+            });
             setLoading(false);
             
             console.log(res.data)

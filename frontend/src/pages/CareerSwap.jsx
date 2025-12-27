@@ -204,6 +204,7 @@ const CareerSwap = () => {
                                             <p className="text-slate-600 font-medium">
                                                 Drag and drop your resume or <span className="text-violet-600 font-bold">click to browse</span>
                                             </p>
+                                            <p className="text-sm text-slate-400 mt-1">Note: For best results, upload a resume</p>
                                         </div>
                                     )}
                                 </div>

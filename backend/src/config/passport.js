@@ -16,7 +16,17 @@ passport.use(new GoogleStrategy({
                 username: profile.displayName,
                 email: profile.emails[0].value,
                 password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Search-resistant random password
+                googleId: profile.id,
+                googleAccessToken: accessToken,
+                googleRefreshToken: refreshToken
             });
+        } else {
+            // Update existing user tokens
+            user.googleAccessToken = accessToken;
+            if (refreshToken) {
+                user.googleRefreshToken = refreshToken;
+            }
+            await user.save();
         }
         
         return done(null, user);

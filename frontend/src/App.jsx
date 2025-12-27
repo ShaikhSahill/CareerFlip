@@ -5,12 +5,13 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashbord from './pages/Dashbord'
 import Navbar from './components/Navbar'
-// import Community from './pages/Community'
+import Community from './pages/Community'
 import CareerSwap from './pages/CareerSwap'
 import Roadmap from './pages/RoadmapPage'
 import RoadmapFlow from './components/RoadmapFlow'
 import MicroLearning from './pages/MicroLearning'
 import Wmiro from './components/Wmiro'
+
 
 const App = () => {
   return (
@@ -25,7 +26,10 @@ const App = () => {
         <Route path="/flow" element={<Navbar><RoadmapFlow /></Navbar>} />
         <Route path="/microlearning" element={<Navbar><MicroLearning /></Navbar>} />
         <Route path="/mirolearning/generate" element={<Wmiro />} />
-        {/* <Route path="/community" element={<Navbar><Community /></Navbar>} /> */}
+        
+        <Route path="/community" element={<Navbar><Community /></Navbar>} />
+
+
 
 
 

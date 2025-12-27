@@ -71,7 +71,7 @@ const Register = () => {
                 email,
                 username,
                 password
-            });
+            }, { withCredentials: true });
             showToast(res.data.error || 'Registration successful');
             if (res.status === 201) {
                 navigate('/login');

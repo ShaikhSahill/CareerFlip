@@ -47,7 +47,7 @@ const Login = () => {
         setError('');
         setLoading(true);
         try {
-            const res = await axios.post('https://careerflip.onrender.com/api/user/login', formData);
+            const res = await axios.post('https://careerflip.onrender.com/api/user/login', formData, { withCredentials: true });
             showToast(res.data.message || 'Login successful', 'success');
 
             // Set token in cookie (valid for 1 day)

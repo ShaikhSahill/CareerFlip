@@ -47,7 +47,11 @@ const login = async (req, res) => {
         }
 
         const token = generateToken(user._id);
-        res.cookie("token", token);
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
+        });
         console.log(await verifyToken(token));
         res.json({ user, token });
     } catch (error) {
@@ -67,7 +71,11 @@ const googleAuthCallback = async (req, res) => {
         const token = generateToken(req.user._id);
 
         // Set cookie
-        res.status(201).cookie("token", token);
+        res.status(201).cookie("token", token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
+        });
 
         // Redirect to frontend dashboard with token
         res.redirect(`https://career-flip.vercel.app/dashboard`);

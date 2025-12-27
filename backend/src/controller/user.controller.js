@@ -70,10 +70,10 @@ const googleAuthCallback = async (req, res) => {
         res.status(201).cookie("token", token);
 
         // Redirect to frontend dashboard with token
-        res.redirect(`http://localhost:5173/dashboard`);
+        res.redirect(`https://career-flip.vercel.app/dashboard`);
 
     } catch (error) {
-        res.status(500).redirect('http://localhost:5173/login?error=AuthFailed');
+        res.status(500).redirect('https://career-flip.vercel.app/login?error=AuthFailed');
     }
 };
 

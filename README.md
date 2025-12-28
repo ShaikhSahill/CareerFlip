@@ -41,3 +41,15 @@ Once Google OAuth verification is approved:
 Public sign-in will be enabled for everyone
 Temporary test credentials will be removed
 Calendar and scheduling features will work normally for all users
+---
+🚀 Skip Registration (Limited Access)
+
+You can skip registration/login and directly access the dashboard using the link below:
+
+👉 https://career-flip.vercel.app/dashboard
+
+⚠️ Important limitation when skipping login:
+❌ Google Calendar will NOT work
+❌ Roadmap → Schedule feature will NOT work
+
+Reason: Calendar access requires Google OAuth permissions, which are unavailable without OAuth login

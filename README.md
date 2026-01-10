@@ -17,7 +17,6 @@ This limitation applies from testing to production deployment
 Until Google OAuth verification is approved, please use the following test credentials to access the application:
 
 Email: shaikhaadill404@gmail.com
-Password: nxtgenthinker02
 
 
 ⚠️ These credentials are provided only for demo, testing, and evaluation purposes.

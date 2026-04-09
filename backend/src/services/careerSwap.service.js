@@ -23,7 +23,7 @@ async function summarizePdf(pdfBuffer, displayName, fileSize) {
 
         // Generate summary from Gemini
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-2.5-flash",
             contents: [
                 {
                     role: "user",
@@ -132,7 +132,7 @@ Return **only valid JSON**, no text or explanation.
 `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-2.5-flash",
             config: {
                 systemInstruction: systemPrompt,
                 temperature: 0.3,

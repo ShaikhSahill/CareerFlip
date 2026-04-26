@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 
 // SVG Icons as Components for reusability
 const SearchIcon = () => (
-    <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
@@ -159,11 +160,10 @@ const RoadmapPage = () => {
         const chosen = searchTerm || selectedSuggestion   ;
         setLoading(true);
         try {
-            const res = await axios.post('https://careerflip.onrender.com/api/roadmap/generate', {
-                withCredentials: true,
+            const res = await axios.post(`${API_BASE_URL}/api/roadmap/generate`, {
                 domain: chosen,
                 level: selectedLevel
-            });
+            }, { withCredentials: true });
             setLoading(false);
             
             console.log(res.data.roadmap);

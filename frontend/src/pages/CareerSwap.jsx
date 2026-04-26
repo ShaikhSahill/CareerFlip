@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 import { UploadCloud, FileText, ArrowRight, Loader2, Sparkles, AlertCircle, X, Repeat, Trash2, ArrowLeftRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import CareerSwapResult from '../components/CareerSwapResult';
@@ -76,7 +77,7 @@ const CareerSwap = () => {
         formData.append('targetRole', targetRole);
         formData.append('pdfFile', file);
         try {
-            const response = await axios.post('https://careerflip.onrender.com/api/careerSwap/upload', formData, {
+            const response = await axios.post(`${API_BASE_URL}/api/careerSwap/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });

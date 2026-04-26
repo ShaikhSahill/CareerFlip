@@ -9,10 +9,108 @@ import ReactFlow, {
     Position,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Clock, Download, Share2, ChevronDown, Bot, Code, Database, Layers3, ArrowLeft } from 'lucide-react';
+import { Clock, Download, Share2, ChevronDown, Bot, Code, Database, Layers3, ArrowLeft, CheckCircle, X, CalendarDays, AlarmClock } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ScheduleModal from './ScheduleModal';
 import axios from 'axios';
+import API_BASE_URL from '../api';
+
+// --- Success Popup Component ---
+const SuccessPopup = ({ data, onClose }) => {
+    if (!data) return null;
+
+    const fmt = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        return d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    const fmtTime = (t) => {
+        if (!t) return '';
+        const [h, m] = t.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return `${hour}:${String(m).padStart(2, '0')} ${period}`;
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                style={{ animation: 'popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both' }}
+            >
+                {/* Green Header */}
+                <div className="bg-gradient-to-br from-green-400 to-emerald-600 p-8 flex flex-col items-center gap-3">
+                    {/* Tick Circle */}
+                    <div
+                        className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center"
+                        style={{ animation: 'scaleIn 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both' }}
+                    >
+                        <CheckCircle className="w-12 h-12 text-white" strokeWidth={2.5} />
+                    </div>
+                    <h2 className="text-white text-xl font-bold text-center">Scheduled Successfully!</h2>
+                    <p className="text-green-100 text-sm text-center">
+                        {data.eventsCreated} learning sessions added to your Google Calendar
+                    </p>
+                </div>
+
+                {/* Details */}
+                <div className="p-6 space-y-3">
+                    {data.startDate && (
+                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                            <CalendarDays className="w-5 h-5 text-purple-500 shrink-0" />
+                            <div>
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Start Date</p>
+                                <p className="text-sm font-semibold text-gray-800">{fmt(data.startDate)}</p>
+                            </div>
+                        </div>
+                    )}
+                    {data.targetEndDate && (
+                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                            <CalendarDays className="w-5 h-5 text-emerald-500 shrink-0" />
+                            <div>
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Target Completion</p>
+                                <p className="text-sm font-semibold text-gray-800">{fmt(data.targetEndDate)}</p>
+                            </div>
+                        </div>
+                    )}
+                    {(data.startTime || data.endTime) && (
+                        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                            <AlarmClock className="w-5 h-5 text-blue-500 shrink-0" />
+                            <div>
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Daily Study Time</p>
+                                <p className="text-sm font-semibold text-gray-800">
+                                    {fmtTime(data.startTime)} &mdash; {fmtTime(data.endTime)}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="px-6 pb-6">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl font-semibold hover:opacity-90 transition shadow-md"
+                    >
+                        Got it!
+                    </button>
+                </div>
+            </div>
+
+            <style>{`
+                @keyframes popIn {
+                    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+                    to   { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                @keyframes scaleIn {
+                    from { transform: scale(0); opacity: 0; }
+                    to   { transform: scale(1); opacity: 1; }
+                }
+            `}</style>
+        </div>
+    );
+};
 
 // --- MOCK DATA STORE (Simulating AI Generation) ---
 
@@ -269,19 +367,26 @@ const RoadmapFlow = () => {
     // State for modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [scheduleLoading, setScheduleLoading] = useState(false);
-    
+    const [successData, setSuccessData] = useState(null);
+
     const roadmapId = location?.state?.roadmapId;
 
     const handleScheduleLearning = async (preferences) => {
         setScheduleLoading(true);
         try {
-            const response = await axios.post('https://careerflip.onrender.com/api/roadmap/schedule', {
+            const response = await axios.post(`${API_BASE_URL}/api/roadmap/schedule`, {
                 roadmapId: roadmapId,
                 ...preferences
             }, { withCredentials: true });
-            
-            alert(response.data.message);
+
             setIsModalOpen(false);
+            setSuccessData({
+                eventsCreated: response.data.eventsCreated,
+                startDate:     preferences.startDate,
+                targetEndDate: preferences.targetEndDate,
+                startTime:     preferences.startTime,
+                endTime:       preferences.endTime,
+            });
         } catch (error) {
             console.error(error);
             const msg = error.response?.data?.error || "Failed to schedule. Ensure you are logged in with Google.";
@@ -383,11 +488,15 @@ const RoadmapFlow = () => {
                             >
                                 <Clock size={16} /> Schedule learning
                             </button>
-                            <ScheduleModal 
-                                isOpen={isModalOpen} 
-                                onClose={() => setIsModalOpen(false)} 
+                            <ScheduleModal
+                                isOpen={isModalOpen}
+                                onClose={() => setIsModalOpen(false)}
                                 onSchedule={handleScheduleLearning}
                                 loading={scheduleLoading}
+                            />
+                            <SuccessPopup
+                                data={successData}
+                                onClose={() => setSuccessData(null)}
                             />
                             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-sm text-gray-700 hover:bg-gray-100 transition">
                                 <Download size={16} /> Download

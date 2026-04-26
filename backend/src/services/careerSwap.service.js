@@ -5,9 +5,8 @@ const { searchVideos } = require('./youtubeService');
 require("dotenv").config();
 
 // Initialize Gemini client
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 
 
 async function summarizePdf(pdfBuffer, displayName, fileSize) {

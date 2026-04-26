@@ -1,182 +1,160 @@
 const { GoogleGenAI } = require("@google/genai");
-require("dotenv").config();
+require('dotenv').config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
- * Generate W3Schools-style educational content in strict JSON format
- * @param {string} topic - Any framework, library, npm, pip, OSS
- * @param {string} format - "module" | "quick"
+ * Generate professional documentation-style educational content
+ * @param {string} topic - Any language, framework, library, tool, or concept
+ * @param {string} format - "module" (full docs) | "quick" (3-section crash course)
  */
 const generateContent = async (topic, format) => {
   try {
-    /* ================= SYSTEM INSTRUCTION ================= */
+    const isQuick = format === "quick";
+
     const systemInstruction = `
-You are an expert technical documentation writer.
+You are an elite technical documentation writer — like the authors of MDN Web Docs, Python official docs, or React docs.
 
-STRICT RULES:
-- Output ONLY valid JSON
-- No markdown
-- No text outside JSON
-- Use simple beginner-friendly language
-- Code examples MUST use backticks (\`)
-- Follow the JSON structure exactly
-`;
+Your job is to produce PROFESSIONAL, BEGINNER-FRIENDLY documentation for any programming language, framework, library, tool, or concept that a user asks about.
 
-    /* ================= USER PROMPT ================= */
-    const userPrompt = `
-Generate content for topic: "${topic}"
+ABSOLUTE RULES:
+1. Output ONLY valid JSON — no markdown, no explanation text outside the JSON.
+2. Follow the exact JSON structure below. No extra or missing fields.
+3. Language: Clear, simple English. Explain like the reader is smart but new to this topic.
+4. Code examples: Must be real, runnable, and educational. Use proper indentation.
+5. Every section must have both explanation text AND at least one code example.
+6. Do NOT use backtick (\`) inside string values — use regular quotes or escape them.
+7. codeExample must be a plain multi-line string (no markdown fences).
+8. commonMistakes and bestPractices are SHORT bullet strings (1 sentence each, max 8 items).
 
-FORMAT RULES (VERY IMPORTANT):
-
-IF format === "module":
-- Generate FULL documentation similar to official docs
-- Well-structured and detailed
-- navItems can be many
-- Each navItem must have detailed content
-- Include multiple code examples
-
-IF format === "quick":
-- Generate a QUICK beginner lesson
-- navItems MUST contain EXACTLY 3 items
-- content MUST contain EXACTLY 3 sections
-- Each section MUST include:
-  - Clear explanation
-  - At least ONE code example
-- Keep language very simple
-
-STRICT JSON STRUCTURE (NO EXTRA FIELDS):
-
+JSON STRUCTURE (follow exactly):
 {
-  "mainTitle": "Title for ${topic}",
+  "mainTitle": "string — e.g. 'React Hooks — Complete Guide'",
+  "description": "string — 1-2 sentence overview of what this topic is and why it matters",
+  "language": "string — programming language or 'General' if applicable",
   "navItems": [
-    { "navTitle": "Section Name" }
+    { "navTitle": "string — section name" }
   ],
   "content": [
     {
-      "contentTitle": "Section Title",
-      "explanation": "Clear beginner-friendly explanation.",
-      "codeExamples": "Code wrapped in backticks."
+      "contentTitle": "string — section title",
+      "overview": "string — 2-4 sentence plain-language explanation of this section",
+      "syntax": "string — the basic syntax pattern (omit if not applicable, use empty string)",
+      "parameters": [
+        { "name": "string", "description": "string" }
+      ],
+      "codeExample": "string — full working code example (multi-line, no markdown fences)",
+      "codeLanguage": "string — e.g. javascript, python, bash, etc.",
+      "explanation": "string — step-by-step walkthrough of the code example",
+      "commonMistakes": ["string", "string"],
+      "bestPractices": ["string", "string"]
     }
   ]
 }
-
-Current format: "${format}"
-
-Generate now.
 `;
 
-    /* ================= GEMINI CALL ================= */
+    const sectionCount = isQuick ? 3 : 8;
+    const depthNote = isQuick
+      ? "This is a QUICK crash course — generate exactly 3 sections. Keep explanations focused and concise. Pick the 3 most essential concepts."
+      : "This is a FULL MODULE — generate 7-10 sections covering the topic comprehensively from basics to advanced usage. Be thorough and detailed.";
+
+    const userPrompt = `
+Generate ${isQuick ? "a quick crash course" : "complete professional documentation"} for: "${topic}"
+
+${depthNote}
+
+For this topic, the sections should logically progress from introduction → core concepts → advanced usage${isQuick ? "" : " → real-world examples → best practices"}.
+
+Ensure:
+- navItems and content arrays have the SAME LENGTH (one nav entry per content section)
+- Every content section has a real, working code example
+- The documentation reads like it came from an official source (MDN, Python docs, React docs)
+- Parameters array can be empty [] if the section has no function/method parameters
+- commonMistakes and bestPractices: include 2-3 items each
+
+Generate now for topic: "${topic}"
+`;
+
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [
         { role: "model", parts: [{ text: systemInstruction }] },
         { role: "user", parts: [{ text: userPrompt }] }
-      ]
+      ],
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.3,
+      }
     });
 
-    const rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text
+      || response?.text
+      || "";
 
-    /* ================= SAFE PARSE ================= */
-    let parsedContent = {};
+    let parsedContent;
     try {
-      parsedContent = JSON.parse(rawText);
-
-      if (!parsedContent.mainTitle) {
-        parsedContent.mainTitle = topic;
-      }
-
-      if (!Array.isArray(parsedContent.navItems)) {
-        parsedContent.navItems = getDefaultNavItems(topic);
-      }
-
-      if (!Array.isArray(parsedContent.content)) {
-        parsedContent.content = [];
-      }
-
-      /* ===== ENFORCE QUICK FORMAT STRICTLY ===== */
-      if (format === "quick") {
-        // Force exactly 3 nav items
-        parsedContent.navItems = parsedContent.navItems.slice(0, 3);
-
-        // Force exactly 3 content sections
-        parsedContent.content = parsedContent.content.slice(0, 3);
-
-        // Ensure codeExamples exist
-        parsedContent.content = parsedContent.content.map((item, index) => ({
-          contentTitle: item.contentTitle || parsedContent.navItems[index]?.navTitle || `Section ${index + 1}`,
-          explanation: item.explanation || `Basic explanation of ${topic}.`,
-          codeExamples: item.codeExamples || `console.log("Learning ${topic}");`
-        }));
-      }
-
+      // Strip markdown fences if model wraps JSON anyway
+      const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+      parsedContent = JSON.parse(cleaned);
     } catch (e) {
-      console.error("❌ Failed to parse JSON:", rawText);
+      console.error("❌ Failed to parse JSON response:", rawText?.slice(0, 300));
       return fallback(topic, format);
     }
 
+    // Validate structure
+    if (!parsedContent.mainTitle || !Array.isArray(parsedContent.content) || parsedContent.content.length === 0) {
+      console.error("❌ Invalid structure in response");
+      return fallback(topic, format);
+    }
+
+    // Enforce quick format (exactly 3 sections)
+    if (isQuick) {
+      parsedContent.navItems = (parsedContent.navItems || []).slice(0, 3);
+      parsedContent.content = parsedContent.content.slice(0, 3);
+    }
+
+    // Ensure every content item has all required fields with safe defaults
+    parsedContent.content = parsedContent.content.map((item, i) => ({
+      contentTitle: item.contentTitle || `Section ${i + 1}`,
+      overview: item.overview || item.explanation || "Introduction to this concept.",
+      syntax: item.syntax || "",
+      parameters: Array.isArray(item.parameters) ? item.parameters : [],
+      codeExample: item.codeExample || item.codeExamples || `// Example for ${topic}`,
+      codeLanguage: item.codeLanguage || "javascript",
+      explanation: item.explanation || item.overview || "",
+      commonMistakes: Array.isArray(item.commonMistakes) ? item.commonMistakes : [],
+      bestPractices: Array.isArray(item.bestPractices) ? item.bestPractices : [],
+    }));
+
     return parsedContent;
+
   } catch (error) {
     console.error("❌ Error generating content:", error);
     return fallback(topic, format);
   }
 };
 
-/* ================= FALLBACK ================= */
+/* ── FALLBACK ─────────────────────────────────────────────────────── */
 function fallback(topic, format) {
-  if (format === "quick") {
-    return {
-      mainTitle: topic,
-      navItems: [
-        { navTitle: "Introduction" },
-        { navTitle: "Basic Usage" },
-        { navTitle: "Example" }
-      ],
-      content: [
-        {
-          contentTitle: "Introduction",
-          explanation: `This section introduces ${topic}.`,
-          codeExamples: `console.log("${topic} intro");`
-        },
-        {
-          contentTitle: "Basic Usage",
-          explanation: `This shows basic usage of ${topic}.`,
-          codeExamples: `// basic usage example`
-        },
-        {
-          contentTitle: "Example",
-          explanation: `A simple example using ${topic}.`,
-          codeExamples: `console.log("Example of ${topic}");`
-        }
-      ]
-    };
-  }
-
   return {
-    mainTitle: topic,
-    navItems: getDefaultNavItems(topic),
+    mainTitle: `${topic} — Documentation`,
+    description: `A comprehensive guide to ${topic}.`,
+    language: "General",
+    navItems: [{ navTitle: "Introduction" }],
     content: [
       {
         contentTitle: "Introduction",
-        explanation: `Welcome to ${topic}. This is a detailed guide.`,
-        codeExamples: `console.log("Hello ${topic}");`
+        overview: `Welcome to ${topic}. This guide couldn't be loaded — please try again.`,
+        syntax: "",
+        parameters: [],
+        codeExample: `// Example for ${topic}\nconsole.log("Hello, ${topic}!");`,
+        codeLanguage: "javascript",
+        explanation: "Please try generating the content again.",
+        commonMistakes: [],
+        bestPractices: [],
       }
     ]
   };
-}
-
-/**
- * Default navItems (used mainly for module fallback)
- */
-function getDefaultNavItems(topic) {
-  return [
-    { navTitle: "Introduction" },
-    { navTitle: "Installation" },
-    { navTitle: "Core Concepts" },
-    { navTitle: "API Usage" },
-    { navTitle: "Examples" },
-    { navTitle: "Best Practices" }
-  ];
 }
 
 module.exports = { generateContent };

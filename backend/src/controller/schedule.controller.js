@@ -7,7 +7,7 @@ const scheduleRoadmap = async (req, res) => {
     console.log("DEBUG: scheduleRoadmap handler called!");
     try {
         const userId = req.user._id; // Assuming auth middleware populates req.user
-        const { roadmapId, startTime, endTime, targetEndDate, skipWeekends } = req.body;
+        const { roadmapId, startTime, endTime, startDate, targetEndDate, skipWeekends } = req.body;
 
         // 1. Fetch User and Roadmap
         const user = await userModel.findById(userId);
@@ -95,8 +95,15 @@ const scheduleRoadmap = async (req, res) => {
         const targetDate = new Date(targetEndDate);
         
         // Calculate total available days
-        let currentDate = new Date(today);
-        currentDate.setDate(currentDate.getDate() + 1); // Start tomorrow
+        // Use the user's chosen startDate, or fallback to tomorrow
+        let currentDate;
+        if (startDate) {
+            currentDate = new Date(startDate);
+            currentDate.setHours(0, 0, 0, 0);
+        } else {
+            currentDate = new Date(today);
+            currentDate.setDate(currentDate.getDate() + 1); // Start tomorrow
+        }
         
         const schedulePlan = [];
         let taskIndex = 0;
@@ -235,7 +242,7 @@ const scheduleRoadmap = async (req, res) => {
             roadmapId: roadmapDoc._id,
             roadmapTitle: roadmapData.title || (Object.keys(roadmapData)[0] ? roadmapData[Object.keys(roadmapData)[0]].title : "Roadmap"),
             googleCalendarEvents: createdEvents,
-            preferences: { startTime, endTime, targetEndDate, skipWeekends }
+            preferences: { startTime, endTime, startDate, targetEndDate, skipWeekends }
         });
 
         await newSchedule.save();

@@ -1,14 +1,14 @@
 const { GoogleGenAI } = require("@google/genai");
 require('dotenv').config();
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 
 
 const generateFullRoadmap = async (domain, level) => {
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-flash-lite",
             contents: [
                 {
                     role: "user",

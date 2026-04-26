@@ -1,10 +1,65 @@
-import React from "react";
-import { useState, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Menu } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Menu,
+  X,
+  BookOpen,
+  AlertTriangle,
+  CheckCircle2,
+  Code2,
+  ChevronRight,
+  Copy,
+  Check,
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-// --- Sidebar Component ---
+/* ───────────────────── Code Block with Copy ───────────────────── */
+const CodeBlock = ({ code, language }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group rounded-xl overflow-hidden border border-slate-700/50 shadow-lg">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700/50">
+        <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+          {language || "code"}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-700"
+        >
+          {copied ? (
+            <>
+              <Check size={13} className="text-emerald-400" />
+              <span className="text-emerald-400">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy size={13} />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      {/* Code body */}
+      <pre className="bg-[#0d1117] text-[#e6edf3] p-5 overflow-x-auto text-sm leading-relaxed font-mono scrollbar-thin">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+};
+
+/* ───────────────────── Sidebar ───────────────────── */
 const Sidebar = ({
+  mainTitle,
+  description,
   navItems,
   selectedTopicIndex,
   onSelectTopic,
@@ -13,191 +68,360 @@ const Sidebar = ({
 }) => {
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300 ${
           isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setIsSidebarOpen(false)}
-      ></div>
+      />
 
-      {/* Sidebar */}
+      {/* Sidebar panel */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-purple-400 via-purple-300 to-purple-400 p-6 flex flex-col transition-transform duration-300 ${
+        className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-40 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col transition-transform duration-300 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 rounded-r-2xl lg:rounded-none shadow-2xl lg:shadow-none`}
+        } lg:translate-x-0 shadow-2xl lg:shadow-none lg:h-screen overflow-hidden`}
       >
-        <nav className="mt-10 flex-1">
-          <ul className="space-y-2">
-            {navItems.map((item, index) => {
-              const isActive = index === selectedTopicIndex;
-              return (
-                <li key={index}>
-                  <button
-                    onClick={() => onSelectTopic(index)}
-                    className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
-                      isActive
-                        ? "bg-purple-600 text-white shadow-lg"
-                        : "text-white/80 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    {item.navTitle}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-slate-700/50">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <BookOpen size={18} className="text-purple-400" />
+              <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest">
+                Docs
+              </span>
+            </div>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden text-slate-400 hover:text-white p-1"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <h2 className="text-lg font-bold text-white leading-snug">
+            {mainTitle}
+          </h2>
+          {description && (
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
+              {description}
+            </p>
+          )}
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin">
+          {navItems.map((item, index) => {
+            const isActive = index === selectedTopicIndex;
+            return (
+              <button
+                key={index}
+                onClick={() => onSelectTopic(index)}
+                className={`w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                  isActive
+                    ? "bg-purple-600/20 text-purple-300 border-l-2 border-purple-400"
+                    : "text-slate-400 hover:bg-slate-700/50 hover:text-slate-200"
+                }`}
+              >
+                <span
+                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                    isActive
+                      ? "bg-purple-600 text-white"
+                      : "bg-slate-700 text-slate-400"
+                  }`}
+                >
+                  {index + 1}
+                </span>
+                <span className="truncate">{item.navTitle}</span>
+              </button>
+            );
+          })}
         </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-700/50">
+          <div className="text-[10px] text-slate-500 text-center">
+            AI-Generated Documentation
+          </div>
+        </div>
       </aside>
     </>
   );
 };
 
-// --- Mobile Header ---
-const MobileHeader = ({ onBack, onOpenSidebar, mainTitle }) => {
-  return (
-    <header className="lg:hidden sticky top-0 z-20 bg-white/80 backdrop-blur-sm shadow-sm p-4 flex items-center justify-between">
-      <button
-        onClick={onBack}
-        className="text-purple-600 p-2 rounded-full hover:bg-purple-100 transition-colors"
-      >
-        <ArrowLeft size={24} />
-      </button>
-      <h2 className="text-lg font-semibold text-purple-700">{mainTitle}</h2>
-      <button
-        onClick={onOpenSidebar}
-        className="text-purple-600 p-2 rounded-full hover:bg-purple-100 transition-colors"
-      >
-        <Menu size={24} />
-      </button>
-    </header>
-  );
-};
+/* ───────────────────── Mobile Header ───────────────────── */
+const MobileHeader = ({ onBack, onOpenSidebar, mainTitle }) => (
+  <header className="lg:hidden sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+    <button
+      onClick={onBack}
+      className="text-slate-600 p-2 -ml-2 rounded-lg hover:bg-slate-100 transition-colors"
+    >
+      <ArrowLeft size={20} />
+    </button>
+    <h2 className="text-sm font-bold text-slate-800 truncate max-w-[60%]">
+      {mainTitle}
+    </h2>
+    <button
+      onClick={onOpenSidebar}
+      className="text-slate-600 p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
+    >
+      <Menu size={20} />
+    </button>
+  </header>
+);
 
-// --- Content Display with Navigation Buttons ---
-const ContentDisplay = ({
-  content,
-  onPrev,
-  onNext,
-  disablePrev,
-  disableNext,
-}) => {
+/* ─────────────────── Section Pill ──────────────────── */
+const SectionPill = ({ icon: Icon, label, color }) => (
+  <div className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${color} mb-3`}>
+    <Icon size={14} />
+    {label}
+  </div>
+);
+
+/* ───────────────────── Content Display ───────────────────── */
+const ContentDisplay = ({ content, sectionIndex, totalSections, onPrev, onNext }) => {
   if (!content) {
     return (
-      <main className="flex-1 p-8 md:p-12 lg:p-20 relative">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl lg:text-5xl font-bold text-purple-700 mb-6">
-            Content Not Available
-          </h1>
-          <p className="text-lg text-gray-600">No content found for this topic.</p>
+      <main className="flex-1 flex items-center justify-center p-12">
+        <div className="text-center">
+          <BookOpen size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-2xl font-bold text-slate-700 mb-2">
+            No Content Available
+          </h2>
+          <p className="text-slate-500">
+            Please go back and generate documentation first.
+          </p>
         </div>
       </main>
     );
   }
 
-  // Combine explanation and code examples
-  const fullContent = `${content.explanation}\n\n${content.codeExamples}`;
-  const parts = fullContent.split(/`([^`]+)`/g);
+  const {
+    contentTitle,
+    overview,
+    syntax,
+    parameters,
+    codeExample,
+    codeLanguage,
+    explanation,
+    commonMistakes,
+    bestPractices,
+  } = content;
 
   return (
-    <main className="flex-1 p-8 md:p-12 lg:p-20 relative">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl lg:text-5xl font-bold text-purple-700 mb-6">
-          {content.contentTitle}
+    <main className="flex-1 overflow-y-auto">
+      <div className="max-w-3xl mx-auto px-6 py-10 md:px-10 lg:px-12">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-6">
+          <span>Docs</span>
+          <ChevronRight size={12} />
+          <span className="text-slate-600 font-medium">{contentTitle}</span>
+          <span className="ml-auto text-slate-400 tabular-nums">
+            {sectionIndex + 1} / {totalSections}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+          {contentTitle}
         </h1>
 
-        <div className="text-lg lg:text-xl text-gray-700 leading-relaxed mb-20 space-y-4">
-          {parts.map((part, index) =>
-            index % 2 === 1 ? (
-              <pre
-                key={index}
-                className="bg-gray-900 text-purple-100 font-mono p-4 rounded-lg overflow-x-auto shadow-md text-sm md:text-base"
-              >
-                <code>{part}</code>
-              </pre>
-            ) : (
-              <p key={index} className="whitespace-pre-line">{part}</p>
-            )
-          )}
+        {/* Overview */}
+        {overview && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-8">
+            <p className="text-slate-700 leading-relaxed text-[15px]">
+              {overview}
+            </p>
+          </div>
+        )}
+
+        {/* Syntax */}
+        {syntax && (
+          <section className="mb-8">
+            <SectionPill icon={Code2} label="Syntax" color="text-blue-600" />
+            <CodeBlock code={syntax} language={codeLanguage} />
+          </section>
+        )}
+
+        {/* Parameters */}
+        {parameters && parameters.length > 0 && (
+          <section className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-3">Parameters</h3>
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">
+                      Name
+                    </th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">
+                      Description
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {parameters.map((param, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-slate-100 last:border-0"
+                    >
+                      <td className="px-4 py-3 font-mono text-purple-700 font-medium whitespace-nowrap">
+                        {param.name}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {param.description}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* Code Example */}
+        {codeExample && (
+          <section className="mb-8">
+            <SectionPill icon={Code2} label="Example" color="text-emerald-600" />
+            <CodeBlock code={codeExample} language={codeLanguage} />
+          </section>
+        )}
+
+        {/* Explanation */}
+        {explanation && (
+          <section className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-3">
+              How It Works
+            </h3>
+            <div className="text-slate-600 leading-relaxed text-[15px] space-y-3">
+              {explanation.split("\n").filter(Boolean).map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Common Mistakes */}
+        {commonMistakes && commonMistakes.length > 0 && (
+          <section className="mb-8">
+            <SectionPill
+              icon={AlertTriangle}
+              label="Common Mistakes"
+              color="text-amber-600"
+            />
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-2.5">
+              {commonMistakes.map((mistake, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <AlertTriangle
+                    size={15}
+                    className="text-amber-500 mt-0.5 shrink-0"
+                  />
+                  <p className="text-sm text-amber-900">{mistake}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Best Practices */}
+        {bestPractices && bestPractices.length > 0 && (
+          <section className="mb-8">
+            <SectionPill
+              icon={CheckCircle2}
+              label="Best Practices"
+              color="text-emerald-600"
+            />
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 space-y-2.5">
+              {bestPractices.map((practice, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <CheckCircle2
+                    size={15}
+                    className="text-emerald-500 mt-0.5 shrink-0"
+                  />
+                  <p className="text-sm text-emerald-900">{practice}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between pt-8 mt-8 border-t border-slate-200">
+          <button
+            onClick={onPrev}
+            disabled={sectionIndex === 0}
+            className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl shadow-sm hover:bg-slate-50 hover:shadow transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ArrowLeft size={16} />
+            Previous
+          </button>
+
+          <button
+            onClick={onNext}
+            disabled={sectionIndex === totalSections - 1}
+            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white font-semibold rounded-xl shadow-md hover:bg-purple-700 hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Next
+            <ArrowRight size={16} />
+          </button>
         </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="absolute inset-x-0 bottom-10 flex justify-between px-6 md:px-16">
-        <button
-          onClick={onPrev}
-          disabled={disablePrev}
-          className={`flex items-center gap-2 bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-purple-700 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed`}
-        >
-          <ArrowLeft size={20} />
-          Previous
-        </button>
-
-        <button
-          onClick={onNext}
-          disabled={disableNext}
-          className={`flex items-center gap-2 bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-purple-700 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed`}
-        >
-          Next
-          <ArrowRight size={20} />
-        </button>
       </div>
     </main>
   );
 };
 
-// --- Main App ---
+/* ───────────────────── Main Wmiro Component ───────────────────── */
 export default function Wmiro() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Get data from navigation state
+
   const { content: contentData, topic, format } = location.state || {};
-  
+
   const [selectedTopicIndex, setSelectedTopicIndex] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Use dynamic data or fallback to mock data
-  const dynamicData = useMemo(() => {
+  // Build display data from API response
+  const docsData = useMemo(() => {
     if (contentData && contentData.navItems && contentData.content) {
       return {
-        mainTitle: contentData.mainTitle || topic || "JavaScript Tutorial",
+        mainTitle: contentData.mainTitle || topic || "Documentation",
+        description: contentData.description || "",
         navItems: contentData.navItems,
-        content: contentData.content
+        content: contentData.content.map((item) => ({
+          contentTitle: item.contentTitle || "Untitled",
+          overview: item.overview || "",
+          syntax: item.syntax || "",
+          parameters: Array.isArray(item.parameters) ? item.parameters : [],
+          codeExample: item.codeExample || item.codeExamples || "",
+          codeLanguage: item.codeLanguage || "javascript",
+          explanation: item.explanation || "",
+          commonMistakes: Array.isArray(item.commonMistakes) ? item.commonMistakes : [],
+          bestPractices: Array.isArray(item.bestPractices) ? item.bestPractices : [],
+        })),
       };
     }
-    
-    // Fallback mock data if no dynamic data is provided
+
+    // Fallback if navigated without data
     return {
-      mainTitle: topic || "JavaScript Tutorial",
-      navItems: [
-        { navTitle: "Introduction" },
-        { navTitle: "Syntax" },
-        { navTitle: "Variables" },
-        { navTitle: "Data Types" },
-        { navTitle: "Operators" },
-        { navTitle: "Functions" },
-        { navTitle: "Objects" },
-        { navTitle: "Arrays" },
-        { navTitle: "Loops" },
-        { navTitle: "Conditionals" },
-        { navTitle: "Events" },
-        { navTitle: "DOM Manipulation" }
-      ],
+      mainTitle: topic || "Documentation",
+      description: "No content loaded.",
+      navItems: [{ navTitle: "Getting Started" }],
       content: [
         {
-          contentTitle: "Introduction",
-          explanation: "No content available. Please go back and generate content first.",
-          codeExamples: ""
-        }
-      ]
+          contentTitle: "Getting Started",
+          overview: "No documentation has been generated yet. Please go back and generate content first.",
+          syntax: "",
+          parameters: [],
+          codeExample: "",
+          codeLanguage: "javascript",
+          explanation: "",
+          commonMistakes: [],
+          bestPractices: [],
+        },
+      ],
     };
   }, [contentData, topic]);
 
-  const currentContent = useMemo(() => 
-    dynamicData.content[selectedTopicIndex], 
-    [dynamicData.content, selectedTopicIndex]
-  );
+  const currentContent = docsData.content[selectedTopicIndex] || null;
 
   const handleSelectTopic = (index) => {
     setSelectedTopicIndex(index);
@@ -205,27 +429,29 @@ export default function Wmiro() {
   };
 
   const handlePrev = () => {
-    if (selectedTopicIndex > 0) setSelectedTopicIndex(selectedTopicIndex - 1);
+    if (selectedTopicIndex > 0) setSelectedTopicIndex((i) => i - 1);
   };
 
   const handleNext = () => {
-    if (selectedTopicIndex < dynamicData.content.length - 1) 
-      setSelectedTopicIndex(selectedTopicIndex + 1);
+    if (selectedTopicIndex < docsData.content.length - 1)
+      setSelectedTopicIndex((i) => i + 1);
   };
 
-  const handleBack = () => navigate(-1);
-
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col lg:flex-row relative">
+    <div className="min-h-screen bg-slate-50 font-sans flex flex-col lg:flex-row">
+      {/* Desktop back button */}
       <button
-        onClick={handleBack}
-        className="hidden lg:block absolute top-6 left-6 z-50 text-purple-600 p-2 rounded-full hover:bg-purple-100 transition-colors"
+        onClick={() => navigate(-1)}
+        className="hidden lg:flex fixed top-4 left-[300px] z-50 items-center gap-1.5 text-sm text-slate-500 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-purple-50 transition-all"
       >
-        <ArrowLeft size={24} />
+        <ArrowLeft size={16} />
+        Back
       </button>
 
       <Sidebar
-        navItems={dynamicData.navItems}
+        mainTitle={docsData.mainTitle}
+        description={docsData.description}
+        navItems={docsData.navItems}
         selectedTopicIndex={selectedTopicIndex}
         onSelectTopic={handleSelectTopic}
         isSidebarOpen={isSidebarOpen}
@@ -234,16 +460,16 @@ export default function Wmiro() {
 
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader
-          onBack={handleBack}
+          onBack={() => navigate(-1)}
           onOpenSidebar={() => setIsSidebarOpen(true)}
-          mainTitle={dynamicData.mainTitle}
+          mainTitle={docsData.mainTitle}
         />
         <ContentDisplay
           content={currentContent}
+          sectionIndex={selectedTopicIndex}
+          totalSections={docsData.content.length}
           onPrev={handlePrev}
           onNext={handleNext}
-          disablePrev={selectedTopicIndex === 0}
-          disableNext={selectedTopicIndex === dynamicData.content.length - 1}
         />
       </div>
     </div>

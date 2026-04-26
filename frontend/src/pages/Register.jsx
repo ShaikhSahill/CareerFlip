@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import aiImage from '../assets/aiChatbot.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from '../api';
 import { useToast } from '../components/Toast';
 
 
@@ -67,12 +68,11 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('https://careerflip.onrender.com/api/user/register', {
-                withCredentials: true,
+            const res = await axios.post(`${API_BASE_URL}/api/user/register`, {
                 email,
                 username,
                 password
-            });
+            }, { withCredentials: true });
             showToast(res.data.error || 'Registration successful');
             if (res.status === 201) {
                 navigate('/login');
@@ -87,7 +87,7 @@ const Register = () => {
 
     // Google login / signup (auto password handling)
      const handleGoogleLogin = () => {
-        window.location.href = 'https://careerflip.onrender.com/api/user/auth/google';
+        window.location.href = `${API_BASE_URL}/api/user/auth/google`;
     };
 
     return (

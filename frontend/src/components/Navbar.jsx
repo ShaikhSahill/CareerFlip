@@ -66,7 +66,7 @@ const Sidebar = ({ isOpen }) => {
             {/* Sidebar Header */}
             <div className="flex items-center gap-3 px-4 h-16 border-b border-gray-200 shrink-0">
                 <LogoIcon />
-                <span className="font-bold text-xl text-gray-800">NxtGenThinkers</span>
+                <span className="font-bold text-xl text-gray-800">CareerFlip</span>
             </div>
 
             {/* Navigation Links */}
